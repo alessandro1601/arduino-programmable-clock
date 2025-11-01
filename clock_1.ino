@@ -17,12 +17,6 @@ int isSetTime = 0;
 
 bool blinkSetTime = false;
 
-void resetLCD(){
-    lcd.setCursor(0,0);
-    lcd.print("                ");
-    lcd.setCursor(0,0);
-}
-
 //CHIAMARE SOLO 1 VOLTA AL SECONDO, ALTRIMENTI L'OROLOGIO NON OROLOGIA
 void countTime(){
   //Time manager
@@ -58,11 +52,11 @@ void countTime(){
 
 }
 
-void printTime(int hour, int min, int sec){
+void printTime(){
   char buffer[9];
 
   if(isSetTime == 0){
-    sprintf(buffer, "%02d:%02d:%02d", hour, min, sec);
+    sprintf(buffer, "%02d:%02d:%02d", hours, mins, secs);
   }
   else{
     if(currentMillis - previousMillisSetTime >= delayTimeSetTime){
@@ -70,22 +64,22 @@ void printTime(int hour, int min, int sec){
 
       if(blinkSetTime){
         blinkSetTime = false;
-          sprintf(buffer, "%02d:%02d:%02d", hour, min, sec);
+          sprintf(buffer, "%02d:%02d:%02d", hours, mins, secs);
       }
       else{
         blinkSetTime = true;
         switch(isSetTime){
           case 1:
-            sprintf(buffer, "  :%02d:%02d", min, sec);
+            sprintf(buffer, "  :%02d:%02d", mins, secs);
             
           break;
 
           case 2:
-            sprintf(buffer, "%02d:  :%02d", hour, sec);
+            sprintf(buffer, "%02d:  :%02d", hours, secs);
           break;
 
           case 3:
-            sprintf(buffer, "%02d:%02d:  ", hour, min);
+            sprintf(buffer, "%02d:%02d:  ", hours, mins);
           break;
         }  
       }
@@ -153,7 +147,7 @@ void loop() {
           break;
         }
 
-        printTime(hours, mins, secs);
+        printTime();
       }
     }
 
@@ -192,7 +186,7 @@ void loop() {
             }          
           break;
         }
-        printTime(hours, mins, secs);
+        printTime();
 
       }
     }
@@ -204,6 +198,9 @@ void loop() {
       }
       else if(isSetTime +1 <4){
         isSetTime++;
+        //previousMillisSetTime = delayTimeSetTime;
+        blinkSetTime = false;
+        printTime();
       }
       else{
         isSetTime = 0;
@@ -216,6 +213,6 @@ void loop() {
       previousMillisClock = currentMillis;
 
       countTime();
-      printTime(hours, mins, secs);
+      printTime();
   }
 }
