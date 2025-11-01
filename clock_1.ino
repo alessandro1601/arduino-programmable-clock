@@ -5,7 +5,7 @@ LiquidCrystal lcd(12,11,5,4,3,2);
 const int BUT_1 = 8, BUT_2 = 9, BUT_3 = 10, delayTimeClock = 1000, delayTimeButtons = 125, delayTimeSetTime = 300;
 unsigned long currentMillis, previousMillisClock = 0, previousMillisButtons = 0, previousMillisSetTime = 0;
 
-int secs = 0, mins = 0, hours = 0, pressButts[3];
+int secs = 0, mins = 0, hours = 0, day = 0, month =0 , year = 2000, pressButts[3];
 
 /*
 0 = No settaggio tempo
@@ -13,9 +13,9 @@ int secs = 0, mins = 0, hours = 0, pressButts[3];
 2 =    ""     minuti
 3=     ""     secondi
 */
-int isSetTime = 0;
+int isSetTime = 0, isSetDate = 0;
 
-bool blinkSetTime = false;
+bool blinkSetTime = false, blinkSetDate;
 
 //CHIAMARE SOLO 1 VOLTA AL SECONDO, ALTRIMENTI L'OROLOGIO NON OROLOGIA
 void countTime(){
@@ -33,6 +33,7 @@ void countTime(){
           hours = 0;
           mins = 0;
           secs = 0;
+          countDate();
         }
         else{
           hours++;
@@ -49,6 +50,60 @@ void countTime(){
       secs++;
     }
   }
+
+}
+
+void countDate(){
+  if(day+1 > 29){
+    //February
+    if(month == 2){
+      //Check for leap years
+      if(year % 4 == 0){
+          day++;
+      }
+      else if(year % 100 == 0){
+        if(year % 400 == 0){
+          day++;
+        }
+        else{
+          day = 0;
+          month++;          
+        }
+      }
+      else{
+        day = 0;
+        month++;
+      }
+    }
+    else{
+      day++;
+    }
+
+  }
+  else if(day+1 == 31){
+    if(month == 4 || month == 6 || month == 9 || month == 11){
+      day = 0;
+      month++;
+    }
+  }
+  else if(day+1 == 32){
+      day = 0;
+      if(month+1 !=13){
+        month++;
+
+      }
+      else{
+        day = 0;
+        month = 0;
+        year++;
+      }
+    
+  }
+  else{
+    day++;
+  }
+
+  printDate();
 
 }
 
@@ -92,6 +147,15 @@ void printTime(){
 
 }
 
+void printDate(){
+  char buffer[9];
+  sprintf(buffer, "%02d/%02d/%04d", day, month, year);
+
+
+  lcd.setCursor(3,1);
+  lcd.print(buffer);
+}
+
 void setup() {
   lcd.begin(16,2);
 
@@ -99,6 +163,7 @@ void setup() {
   for (int i=BUT_1;i<=BUT_3;i++){
     pinMode(i, INPUT);
   }
+  printDate();
 
 }
 
@@ -149,6 +214,42 @@ void loop() {
 
         printTime();
       }
+
+      /*
+      else if(isSetDate !=0){
+        //Seve a far comparire subito il numero cambiato, senza aspettare il delay del blink
+        previousMillisSetTime = delayTimeSetTime;
+        switch(isSetDate){
+          case 1:
+            if(day-1 == -1){
+              hours = 23;
+            }
+            else{
+              hours--;
+            }
+            
+          break;
+
+          case 2:
+            if(mins-1 == -1){
+              mins = 59;
+            }
+            else{
+              mins--;
+            }
+          break;
+
+          case 3:
+            if(secs-1 == -1){
+              secs = 59;
+            }
+            else{
+              secs--;
+            }          
+          break;
+        }        
+      }
+      */
     }
 
     //Button 3
@@ -202,8 +303,19 @@ void loop() {
         blinkSetTime = false;
         printTime();
       }
-      else{
+      else if(isSetTime == 3){
         isSetTime = 0;
+        //isSetDate = 1;
+      }
+
+      else if(isSetDate +1 < 4){
+        //isSetDate++;
+        //blinkSetDate = false;
+        //printDate();
+      }
+      else{
+        isSetDate = 0;
+
       }
     }
 
